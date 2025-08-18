@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Рассылка - Панель управления</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .status-bar {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+        }
+
+        .status-dot.ready {
+            background: #28a745;
+        }
+
+        .status-dot.initializing {
+            background: #ffc107;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        /* Extracted utility classes (moved from inline styles) */
+        .card-light { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .text-muted { color: #666; }
+        .mb-15 { margin-bottom: 15px; }
+        .mb-20 { margin-bottom: 20px; }
+        .ml-10 { margin-left: 10px; }
+        .hidden { display: none; }
+        .text-center { text-align: center; }
+        .p-30 { padding: 30px; }
+        .logs-box { background: #f8f9fa; padding: 15px; border-radius: 8px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 14px; }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            border-bottom-color: #25d366;
+            color: #25d366;
+        }
+
+        .tab:hover {
+            background: #f8f9fa;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #25d366;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: #25d366;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #128c7e;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+
+        .phone-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .phone-input input {
+            flex: 1;
+        }
+
+        .remove-phone {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-phone {
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .stats h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #25d366;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 WhatsApp Рассылка</h1>
+            <p>Панель управления для тестирования и массовых рассылок</p>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Не инициализирован</span>
+            </div>
+            <div>
+                <button class="btn btn-primary" id="initBtn">🚀 Инициализировать WhatsApp</button>
+                <button class="btn btn-danger" id="closeBtn">❌ Закрыть клиент</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="tabs">
+                <div class="tab active" data-tab="test">🧪 Тестовое сообщение</div>
+                <div class="tab" data-tab="mass">📢 Массовая рассылка</div>
+                <div class="tab" data-tab="qr">📱 QR Код</div>
+                <div class="tab" data-tab="status">📊 Статистика</div>
+            </div>
+
+            <!-- Тестовое сообщение -->
+            <div class="tab-content active" id="test-tab">
+                <h2>Отправка тестового сообщения</h2>
+                <p>Отправьте сообщение на один конкретный номер для тестирования</p>
+                
+                <div class="form-group">
+                    <label for="testPhone">Номер телефона:</label>
+                    <input type="text" id="testPhone" class="form-control" 
+                           placeholder="+7 999 123 45 67" value="+7 999 123 45 67">
+                </div>
+                
+                <div class="form-group">
+                    <label for="testMessage">Сообщение:</label>
+                    <textarea id="testMessage" class="form-control" rows="4" 
+                              placeholder="Введите текст сообщения...">🎉 Тестовое сообщение! Это проверка системы рассылки.</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="testAttachment">Вложение (опционально):</label>
+                    <div class="card-light">
+                        <p class="text-muted mb-15">Поддерживаемые форматы: изображения, видео, аудио, документы (макс. 16MB)</p>
+                        <input type="file" id="testAttachment" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" class="mb-15" title="Выбор файла вложения" aria-label="Вложение (опционально)">
+                        <button class="btn btn-secondary" onclick="uploadTestAttachment()">📎 Загрузить вложение</button>
+                        <div id="testAttachmentResult" class="mb-15"></div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" id="sendTestBtn">📤 Отправить тестовое сообщение</button>
+                <button class="btn btn-danger hidden" id="stopTestBtn">⏹️ Остановить отправку</button>
+                
+                <div id="testResult"></div>
+            </div>
+
+            <!-- Массовая рассылка -->
+            <div class="tab-content" id="mass-tab">
+                <h2>Массовая рассылка</h2>
+                <p>Отправьте сообщение на несколько номеров с настраиваемой задержкой</p>
+                
+                <div class="form-group">
+                    <label for="fileUpload">Загрузка номеров из файла:</label>
+                    <div class="card-light">
+                        <p class="text-muted mb-15">Поддерживаемые форматы: .txt, .doc, .docx, .xls, .xlsx</p>
+                        <input type="file" id="fileUpload" accept=".txt,.doc,.docx,.xls,.xlsx" class="mb-15" title="Загрузка файла с номерами" aria-label="Файл с номерами">
+                        <button class="btn btn-secondary" onclick="uploadFile()">📁 Загрузить файл</button>
+                        <div id="uploadResult" class="mb-15"></div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Номера телефонов:</label>
+                    <div id="phoneNumbers">
+                        <div class="phone-input">
+                            <input type="text" class="form-control phone-input-field" 
+                                   placeholder="+7 999 123 45 67" value="+7 999 123 45 67" aria-label="Номер телефона" title="Номер телефона">
+                            <button class="remove-phone" onclick="removePhone(this)">×</button>
+                        </div>
+                    </div>
+                    <button class="add-phone" onclick="addPhone()">+ Добавить номер</button>
+                    <button class="btn btn-secondary ml-10" onclick="clearAllPhones()">🗑️ Очистить все</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="massMessage">Сообщение:</label>
+                    <textarea id="massMessage" class="form-control" rows="4" 
+                              placeholder="Введите текст сообщения...">🎉 Массовое сообщение! Это тест системы рассылки.</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="delay">Задержка между сообщениями (мс):</label>
+                    <input type="number" id="delay" class="form-control" value="5000" min="1000">
+                </div>
+                
+                <div class="form-group">
+                    <label for="maxMessages">Количество сообщений на номер:</label>
+                    <input type="number" id="maxMessages" class="form-control" 
+                           placeholder="Сколько раз отправить на каждый номер" min="1" max="100" value="1">
+                    <small class="text-muted">Сколько раз отправить сообщение на каждый номер из списка</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="massAttachment">Вложение (опционально):</label>
+                    <div class="card-light">
+                        <p class="text-muted mb-15">Поддерживаемые форматы: изображения, видео, аудио, документы (макс. 16MB)</p>
+                        <input type="file" id="massAttachment" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" class="mb-15" title="Загрузка вложения для массовой отправки" aria-label="Вложение для массовой отправки">
+                        <button class="btn btn-secondary" onclick="uploadMassAttachment()">📎 Загрузить вложение</button>
+                        <div id="massAttachmentResult" class="mb-15"></div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" id="sendMassBtn">📤 Начать массовую рассылку</button>
+                <button class="btn btn-danger hidden" id="stopMassBtn">⏹️ Остановить рассылку</button>
+                
+                <div id="massResult"></div>
+            </div>
+
+            <!-- QR Код -->
+            <div class="tab-content" id="qr-tab">
+                <h2>QR Код для подключения</h2>
+                <p>Отсканируйте QR код своим WhatsApp для подключения к системе</p>
+                
+                <div class="text-center p-30">
+                    <div id="qrContainer" class="mb-20">
+                        <p>Нажмите "Инициализировать WhatsApp" для получения QR кода</p>
+                    </div>
+                    <div id="qrStatus" class="mb-20"></div>
+                    <button class="btn btn-secondary hidden" onclick="checkQRCode()" id="checkQRBtn">🔄 Проверить QR код</button>
+                </div>
+            </div>
+
+            <!-- Статистика -->
+            <div class="tab-content" id="status-tab">
+                <h2>Статистика и логи</h2>
+                <p>Информация о работе системы и последних операциях</p>
+                
+                <div class="stats">
+                    <h3>Системная информация</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalSent">0</div>
+                            <div class="stat-label">Отправлено</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalFailed">0</div>
+                            <div class="stat-label">Ошибок</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="successRate">0%</div>
+                            <div class="stat-label">Успешность</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Последние логи:</label>
+                    <div id="logs" class="logs-box">
+                        <div>Система готова к работе...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stats = { sent: 0, failed: 0 };
+        let isMassSending = false;
+        let isTestSending = false;
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
+            });
+        });
+
+        // Initialize WhatsApp
+        document.getElementById('initBtn').addEventListener('click', async () => {
+            updateStatus('initializing', 'Инициализация...');
+            addLog('🚀 Инициализация WhatsApp клиента...');
+            
+            try {
+                const response = await fetch('/api/init', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStatus('initializing', 'Ожидание QR кода...');
+                    addLog('✅ WhatsApp клиент инициализирован. Ожидание QR кода...');
+                    startQRCheck();
+                } else {
+                    updateStatus('error', 'Ошибка инициализации');
+                    addLog('❌ ' + data.message);
+                }
+            } catch (error) {
+                updateStatus('error', 'Ошибка подключения');
+                addLog('❌ Ошибка подключения к серверу');
+            }
+        });
+
+        // Close WhatsApp
+        document.getElementById('closeBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/close', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStatus('error', 'Клиент закрыт');
+                    addLog('🔒 WhatsApp клиент закрыт');
+                    stopStatusCheck();
+                } else {
+                    addLog('❌ ' + data.message);
+                }
+            } catch (error) {
+                addLog('❌ Ошибка закрытия клиента');
+            }
+        });
+
+        // Send test message
+        document.getElementById('sendTestBtn').addEventListener('click', async () => {
+            if (isTestSending) return;
+            
+            isTestSending = true;
+            document.getElementById('sendTestBtn').style.display = 'none';
+            document.getElementById('stopTestBtn').style.display = 'inline-block';
+            
+            try {
+                await sendTestMessage();
+            } finally {
+                isTestSending = false;
+                document.getElementById('sendTestBtn').style.display = 'inline-block';
+                document.getElementById('stopTestBtn').style.display = 'none';
+            }
+        });
+
+        // Stop test message
+        document.getElementById('stopTestBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/stop-test', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    addLog('⏹️ ' + data.message);
+                }
+            } catch (error) {
+                addLog('❌ Ошибка остановки теста');
+            }
+            
+            isTestSending = false;
+            document.getElementById('sendTestBtn').style.display = 'inline-block';
+            document.getElementById('stopTestBtn').style.display = 'none';
+        });
+
+        async function sendTestMessage() {
+            const phone = document.getElementById('testPhone').value;
+            const message = document.getElementById('testMessage').value;
+            const attachmentPath = window.testAttachmentPath || '';
+            
+            if (!phone) {
+                showAlert('testResult', 'Введите номер телефона', 'error');
+                return;
+            }
+            
+            addLog(`📤 Отправка тестового сообщения на ${phone}...`);
+            
+            try {
+                const response = await fetch('/api/send-test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phoneNumber: phone, message: message, attachmentPath: attachmentPath })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('testResult', data.message, 'success');
+                    addLog('✅ ' + data.message);
+                    stats.sent++;
+                    updateStats();
+                } else {
+                    showAlert('testResult', data.message, 'error');
+                    addLog('❌ ' + data.message);
+                    stats.failed++;
+                    updateStats();
+                }
+            } catch (error) {
+                showAlert('testResult', 'Ошибка отправки', 'error');
+                addLog('❌ Ошибка отправки сообщения');
+            }
+        }
+
+        // Send mass message
+        document.getElementById('sendMassBtn').addEventListener('click', async () => {
+            if (isMassSending) return;
+            
+            isMassSending = true;
+            document.getElementById('sendMassBtn').style.display = 'none';
+            document.getElementById('stopMassBtn').style.display = 'inline-block';
+            
+            try {
+                await sendMassMessage();
+            } finally {
+                isMassSending = false;
+                document.getElementById('sendMassBtn').style.display = 'inline-block';
+                document.getElementById('stopMassBtn').style.display = 'none';
+            }
+        });
+
+        // Stop mass message
+        document.getElementById('stopMassBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/stop-mass', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    addLog('⏹️ ' + data.message);
+                }
+            } catch (error) {
+                addLog('❌ Ошибка остановки рассылки');
+            }
+            
+            isMassSending = false;
+            document.getElementById('sendMassBtn').style.display = 'inline-block';
+            document.getElementById('stopMassBtn').style.display = 'none';
+        });
+
+        async function sendMassMessage() {
+            const phones = Array.from(document.querySelectorAll('.phone-input-field'))
+                .map(input => input.value.trim())
+                .filter(phone => phone);
+            
+            const message = document.getElementById('massMessage').value;
+            const delay = document.getElementById('delay').value;
+            const maxMessages = document.getElementById('maxMessages').value;
+            const attachmentPath = window.massAttachmentPath || '';
+            
+            if (phones.length === 0) {
+                showAlert('massResult', 'Добавьте номера телефонов', 'error');
+                return;
+            }
+            
+            addLog(`📤 Начало массовой рассылки на ${phones.length} номеров...`);
+            
+            try {
+                const response = await fetch('/api/send-mass', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        phoneNumbers: phones, 
+                        message: message, 
+                        delay: delay, 
+                        maxMessages: maxMessages,
+                        attachmentPath: attachmentPath
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('massResult', data.message, 'success');
+                    addLog('✅ ' + data.message);
+                    stats.sent += data.stats.sent;
+                    stats.failed += data.stats.failed;
+                    updateStats();
+                } else {
+                    showAlert('massResult', data.message, 'error');
+                    addLog('❌ ' + data.message);
+                }
+            } catch (error) {
+                showAlert('massResult', 'Ошибка массовой рассылки', 'error');
+                addLog('❌ Ошибка массовой рассылки');
+            }
+        }
+
+        // Phone number management
+        function addPhone() {
+            const container = document.getElementById('phoneNumbers');
+            const div = document.createElement('div');
+            div.className = 'phone-input';
+            div.innerHTML = `
+                <input type="text" class="form-control phone-input-field" placeholder="+7 999 123 45 67" aria-label="Номер телефона" title="Номер телефона">
+                <button class="remove-phone" onclick="removePhone(this)" aria-label="Удалить номер" title="Удалить номер">×</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function removePhone(button) {
+            if (document.querySelectorAll('.phone-input').length > 1) {
+                button.parentElement.remove();
+            }
+        }
+
+        // Status management
+        function updateStatus(type, text) {
+            const dot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            dot.className = 'status-dot ' + type;
+            statusText.textContent = text;
+        }
+
+        let statusCheckInterval;
+
+        function startStatusCheck() {
+            statusCheckInterval = setInterval(checkStatus, 2000);
+        }
+
+        function stopStatusCheck() {
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+            }
+        }
+
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                if (data.initialized) {
+                    if (data.ready) {
+                        updateStatus('ready', 'Готов к работе');
+                    } else {
+                        updateStatus('initializing', 'Ожидание готовности');
+                    }
+                } else {
+                    updateStatus('error', 'Не инициализирован');
+                }
+            } catch (error) {
+                updateStatus('error', 'Ошибка подключения');
+            }
+        }
+
+        // Utility functions
+        function showAlert(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            }
+        }
+
+        function addLog(message) {
+            const logs = document.getElementById('logs');
+            const time = new Date().toLocaleTimeString();
+            logs.innerHTML += `<div>[${time}] ${message}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function updateStats() {
+            const total = stats.sent + stats.failed;
+            const rate = total > 0 ? Math.round((stats.sent / total) * 100) : 0;
+            
+            document.getElementById('totalSent').textContent = stats.sent;
+            document.getElementById('totalFailed').textContent = stats.failed;
+            document.getElementById('successRate').textContent = rate + '%';
+        }
+
+        // QR Code functions
+        let qrCheckInterval;
+
+        function startQRCheck() {
+            qrCheckInterval = setInterval(checkQRCode, 2000);
+            document.getElementById('checkQRBtn').style.display = 'inline-block';
+            addLog('🔄 Автоматическая проверка QR кода запущена');
+        }
+
+        function stopQRCheck() {
+            if (qrCheckInterval) {
+                clearInterval(qrCheckInterval);
+                document.getElementById('checkQRBtn').style.display = 'none';
+                addLog('⏹️ Автоматическая проверка QR кода остановлена');
+            }
+        }
+
+        async function checkQRCode() {
+            try {
+                const response = await fetch('/api/qr');
+                const data = await response.json();
+                
+                if (data.success && data.qrCode) {
+                    stopQRCheck();
+                    addLog('📱 QR код получен с сервера. Генерирую изображение...');
+                    displayQRCode(data.qrCode);
+                    updateStatus('initializing', 'QR код готов. Отсканируйте...');
+                } else {
+                    addLog('⏳ Ожидание QR кода...');
+                }
+            } catch (error) {
+                addLog('❌ Ошибка проверки QR кода: ' + error.message);
+            }
+        }
+
+        function displayQRCode(qrCode) {
+            const container = document.getElementById('qrContainer');
+            
+            // Check if QRCode library is loaded
+            if (typeof QRCode === 'undefined') {
+                addLog('⚠️ QR библиотека не загружена, загружаю...');
+                
+                // Load QR library
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+                script.onload = () => {
+                    addLog('📚 QR библиотека загружена, генерирую код...');
+                    setTimeout(() => displayQRCode(qrCode), 100);
+                };
+                script.onerror = () => {
+                    addLog('❌ Не удалось загрузить QR библиотеку');
+                    showTextQR(qrCode, container);
+                };
+                document.head.appendChild(script);
+                return;
+            }
+            
+            // Generate QR code
+            try {
+                container.innerHTML = `
+                    <div style="background: white; padding: 20px; border-radius: 10px; display: inline-block; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <div id="qrcode"></div>
+                    </div>
+                `;
+                
+                new QRCode(document.getElementById('qrcode'), {
+                    text: qrCode,
+                    width: 256,
+                    height: 256,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                document.getElementById('qrStatus').innerHTML = '<div class="alert alert-success">✅ QR код готов! Отсканируйте его в WhatsApp</div>';
+                addLog('🎯 QR код сгенерирован успешно');
+            } catch (error) {
+                addLog('❌ Ошибка генерации QR кода: ' + error.message);
+                showTextQR(qrCode, container);
+            }
+        }
+        
+        function showTextQR(qrCode, container) {
+            container.innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 10px; display: inline-block; text-align: center;">
+                    <h3 style="color: #333; margin-bottom: 15px;">📱 QR Код для подключения</h3>
+                    <p style="color: #666; margin-bottom: 20px;">QR код получен. Отсканируйте его в WhatsApp:</p>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; word-break: break-all;">
+                        ${qrCode}
+                    </div>
+                </div>
+            `;
+            document.getElementById('qrStatus').innerHTML = '<div class="alert alert-info">📱 QR код получен. Отсканируйте его в WhatsApp</div>';
+        }
+
+        // File upload functions
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileUpload');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showAlert('uploadResult', 'Выберите файл для загрузки', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                addLog(`📁 Загрузка файла: ${file.name}...`);
+                
+                const response = await fetch('/api/upload-numbers', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('uploadResult', data.message, 'success');
+                    addLog(`✅ ${data.message}`);
+                    
+                    // Add phone numbers to the list
+                    data.phoneNumbers.forEach(phone => {
+                        addPhoneWithValue(phone);
+                    });
+                    
+                    // Clear file input
+                    fileInput.value = '';
+                    
+                } else {
+                    showAlert('uploadResult', data.message, 'error');
+                    addLog(`❌ ${data.message}`);
+                }
+            } catch (error) {
+                showAlert('uploadResult', 'Ошибка загрузки файла', 'error');
+                addLog('❌ Ошибка загрузки файла');
+            }
+        }
+
+        function addPhoneWithValue(phoneNumber) {
+            const container = document.getElementById('phoneNumbers');
+            const div = document.createElement('div');
+            div.className = 'phone-input';
+            div.innerHTML = `
+                <input type="text" class="form-control phone-input-field" value="${phoneNumber}" placeholder="+7 999 123 45 67" aria-label="Номер телефона" title="Номер телефона">
+                <button class="remove-phone" onclick="removePhone(this)" aria-label="Удалить номер" title="Удалить номер">×</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function clearAllPhones() {
+            const container = document.getElementById('phoneNumbers');
+            container.innerHTML = `
+                <div class="phone-input">
+                    <input type="text" class="form-control phone-input-field" 
+                           placeholder="+7 999 123 45 67" value="+7 999 123 45 67" aria-label="Номер телефона" title="Номер телефона">
+                    <button class="remove-phone" onclick="removePhone(this)" aria-label="Удалить номер" title="Удалить номер">×</button>
+                </div>
+            `;
+            addLog('🗑️ Все номера телефонов очищены');
+        }
+
+        // Initial status check
+        checkStatus();
+
+        // Upload test attachment
+        async function uploadTestAttachment() {
+            const fileInput = document.getElementById('testAttachment');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showAlert('testAttachmentResult', 'Выберите файл для загрузки', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('/api/upload-attachment', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.testAttachmentPath = data.filePath;
+                    showAlert('testAttachmentResult', `✅ ${data.message}`, 'success');
+                    addLog(`📎 Вложение загружено: ${data.fileName}`);
+                } else {
+                    showAlert('testAttachmentResult', data.message, 'error');
+                    addLog(`❌ Ошибка загрузки вложения: ${data.message}`);
+                }
+            } catch (error) {
+                showAlert('testAttachmentResult', 'Ошибка загрузки файла', 'error');
+                addLog('❌ Ошибка загрузки вложения');
+            }
+        }
+
+        // Upload mass attachment
+        async function uploadMassAttachment() {
+            const fileInput = document.getElementById('massAttachment');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showAlert('massAttachmentResult', 'Выберите файл для загрузки', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('/api/upload-attachment', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.massAttachmentPath = data.filePath;
+                    showAlert('massAttachmentResult', `✅ ${data.message}`, 'success');
+                    addLog(`📎 Вложение загружено: ${data.fileName}`);
+                } else {
+                    showAlert('massAttachmentResult', data.message, 'error');
+                    addLog(`❌ Ошибка загрузки вложения: ${data.message}`);
+                }
+            } catch (error) {
+                showAlert('massAttachmentResult', 'Ошибка загрузки файла', 'error');
+                addLog('❌ Ошибка загрузки вложения');
+            }
+        }
+    </script>
+</body>
+</html>
